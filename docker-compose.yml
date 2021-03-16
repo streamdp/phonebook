@@ -20,7 +20,7 @@ services:
 
 
   testTask:
-    image: streamdp/beego
+    image: phonebook
     ports:
       - 8080:8080
     container_name: phonebook-container

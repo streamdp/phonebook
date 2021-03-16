@@ -1,0 +1,152 @@
+{{if .PhoneRecords }}
+    {{if gt .paginator.PageNums 1}}
+    <nav aria-label="Page navigation" class="mt-4 mb-4">
+        <ul class="pagination justify-content-center">
+            {{if .paginator.HasPrev}}
+            <li class="page-item">
+                <a class="page-link" href="{{.paginator.PageLinkPrev}}">&laquo;</a>
+            </li>
+            {{else}}
+            <li class="page-item" disabled>
+                <a class="page-link">&laquo;</a>
+            </li>
+            {{end}}
+            {{range $index, $page := .paginator.Pages}}
+            <li class="page-item {{if $.paginator.IsActive .}} active {{end}}">
+                <a class="page-link" href="{{$.paginator.PageLink $page}}">{{$page}}</a>
+            </li>
+            {{end}}
+            {{if .paginator.HasNext}}
+            <li class="page-item">
+                <a class="page-link" href="{{.paginator.PageLinkNext}}">&raquo;</a>
+            </li>
+            {{else}}
+            <li class="page-item" disabled>
+                <a class="page-link">&raquo;</a>
+            </li>
+            {{end}}
+        </ul>
+    </nav>
+    {{end}}
+    <form class="form-row" id="remove_many_items" action="/v1/delete_many" method="post">
+        <div class="card-deck mb-4 justify-content-center">
+        {{range $key, $val := .PhoneRecords}}
+            <div class="col-lg-4 mb-2">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <input name="should_be_removed" class="checkbox-pos-absolute form-check-input" type="checkbox" value="{{ $val.ID | getHexFromObjectID}}" hidden>
+                        <small class="text-muted">{{$val.Department.FirstLevel}} ></small><br>
+                        <small class="text-muted">{{$val.Department.SecondLevel}} ></small><br>
+                        <small class="text-muted"><b>{{$val.Department.ThirdLevel}}</b></small>
+                    </div>
+                    <img class="card-img-top" src="{{$val.PhotoUrl}}" alt="Card image cap">
+                    <div class="card-body">
+                        <h3 class="card-title">{{$val.LastName}}</h3>
+                        <h5 class="card-title">{{$val.FirstName}} {{$val.MiddleName}}</h5>
+                        <p>{{$val.Position}}</p>
+                        {{if $val.ServiceNumber}}
+                        <table class="table table-sm table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col">Служебный номер:</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{range $num := $val.ServiceNumber}}
+                            <tr>
+                                <td scope="row">{{$num}}</td>
+                            </tr>
+                            {{end}}
+                            </tbody>
+                        </table>
+                        {{end}}
+                        {{if $val.PersonalNumber}}
+                        <table class="table table-sm table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col">Личный номер:</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{range $num := $val.PersonalNumber}}
+                            <tr>
+                                <td scope="row">{{$num}}</td>
+                            </tr>
+                            {{end}}
+                            </tbody>
+                        </table>
+                        {{end}}
+                        {{if $val.ServiceMobileNumber}}
+                        <table class="table table-sm table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col">Служебный мобильный номер:</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{range $num := $val.ServiceMobileNumber}}
+                            <tr>
+                                <td scope="row">{{$num}}</td>
+                            </tr>
+                            {{end}}
+                            </tbody>
+                        </table>
+                        {{end}}
+                    </div>
+                    <div class="card-footer">
+                        <div class="row p-2 justify-content-center align-content-center" >
+                            <div class="w-25">
+                                <button data-mdb-toggle="modal" data-mdb-target="#deleteModal"  data-mdb-recordid="{{$val.ID | getHexFromObjectID}}" type="button" class="badge bg-danger" title="Удалить">X</button>
+                                <button type="button" class="badge bg-warning" data-mdb-toggle="modal" data-mdb-target="#updateModal" data-mdb-whatever="{{$val.ID | getHexFromObjectID}}" title="Обновить">O</button>
+                            </div>
+                            <div class="w-75 pt-1 text-end">
+                                {{if $val.IsUpdated}}
+                                <small class="text-muted">Обновлено: {{dateformat $val.UpdatedAt "15:04:05 2006-01-02"}}</small>
+                                {{else}}
+                                <small class="text-muted">Добавлено: {{dateformat $val.CreatedAt "15:04:05 2006-01-02"}}</small>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{$i:= $key | isDivisibleByThree}}
+            {{if eq  $i 1}}
+            {{if ne $key 17}}
+            </div>
+            <div class="card-deck mb-4 justify-content-center">
+            {{end}}
+            {{end}}
+        {{end}}
+            </div>
+    </form>
+    {{if gt .paginator.PageNums 1}}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {{if .paginator.HasPrev}}
+            <li class="page-item ">
+                <a class="page-link" href="{{.paginator.PageLinkPrev}}">&laquo;</a>
+            </li>
+            {{else}}
+            <li class="page-item " disabled>
+                <a class="page-link">&laquo;</a>
+            </li>
+            {{end}}
+            {{range $index, $page := .paginator.Pages}}
+            <li class="page-item {{if $.paginator.IsActive .}} active {{end}}">
+                <a class="page-link" href="{{$.paginator.PageLink $page}}">{{$page}}</a>
+            </li>
+            {{end}}
+            {{if .paginator.HasNext}}
+            <li class="page-item">
+                <a class="page-link" href="{{.paginator.PageLinkNext}}">&raquo;</a>
+            </li>
+            {{else}}
+            <li class="page-item" disabled>
+                <a class="page-link">&raquo;</a>
+            </li>
+            {{end}}
+        </ul>
+    </nav>
+    {{end}}
+{{end}}

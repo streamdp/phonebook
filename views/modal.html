@@ -1,0 +1,141 @@
+<!-- Update record modal -->
+<div class="modal fade  bd-example-modal-lg" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalLabel">Обновить запись в телефонной книге:</h5>
+                <button type="button" class="badge badge-pill bg-dark" data-mdb-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm" action="/updateRecord"  enctype="multipart/form-data"  method="post">
+                    <div class="input-group mb-3 col-lg">
+                        <input class="form-control" type="hidden" name="modal_id_user">
+                        <div class="input-group-prepend w-25">
+                            <label class="input-group-text w-100" for="modalInputGroupSelect01">Подразделение</label>
+                        </div>
+                        <select name="modal_first_level" class="custom-select w-75" id="modalInputGroupSelect01">
+                            <option value="" disabled  selected>Выберите...</option>
+                            {{range $key, $val := .FirstLevel}}
+                            <option value="{{$val}}">{{$val}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="input-group mb-3 col-lg">
+                        <div class="input-group-prepend w-25">
+                            <label class="input-group-text w-100" for="modalInputGroupSelect02">Отдел</label>
+                        </div>
+                        <select name="modal_second_level" class="custom-select w-75" id="modalInputGroupSelect02">
+                            <option value="" disabled  selected>Выберите...</option>
+                            {{range $key, $val := .SecondLevel}}
+                            <option value="{{$val}}">{{$val}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="input-group mb-3 col-lg">
+                        <div class="input-group-prepend w-25">
+                            <label class="input-group-text w-100" for="modalInputGroupSelect03">Сектор</label>
+                        </div>
+                        <select name="modal_third_level" class="custom-select w-75" id="modalInputGroupSelect03">
+                            <option value="" disabled  selected>Выберите...</option>
+                            {{range $key, $val := .ThirdLevel}}
+                            <option value="{{$val}}">{{$val}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="input-group mb-3 col-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="modal_last_name">Фамилия</span>
+                            </div>
+                            <input name="modal_last_name" type="text" class="form-control" placeholder="Фамилия" aria-label="Фамилия">
+                        </div>
+                        <div class="input-group mb-3 col-lg">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="modal_first_name">Имя</span>
+                            </div>
+                            <input name="modal_first_name" type="text" class="form-control" placeholder="Имя" aria-label="Имя">
+                        </div>
+                    </div>
+                    <div class="input-group mb-3 col-lg">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="modal_middle_name">Отчество</span>
+                        </div>
+                        <input name="modal_middle_name" type="text" class="form-control" placeholder="Отчество" aria-label="Отчество">
+                    </div>
+                    <div class="input-group mb-3 col-lg">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="modal_position">Должность</span>
+                        </div>
+                        <input name="modal_position" type="text" class="form-control" placeholder="Должность" aria-label="Должность">
+                    </div>
+                    <div class="row">
+                        <div id="service_num" class="col-lg w-50">
+                            <div class="col-lg">
+                                <label class="p-2" for="service_num">Служебный номер:</label>
+                            </div>
+                            <div id="div_service_num" class="input-group mb-3 col-lg">
+                                <input id="input_service_num" name="service_num" type="text" class="form-control" placeholder="Введите номер..." aria-label="Служебный номер">
+                                <div class="input-group-append">
+                                    <span class="btn btn-outline-success" type="button" onclick="add_fields('service_num')">+</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="personal_num" class="col-lg w-50">
+                            <div class="col-lg">
+                                <label class="p-2"  for="personal_num">Личный номер:</label>
+                            </div>
+                            <div id="div_personal_num" class="input-group mb-3 col-lg">
+                                <input id="input_personal_num" name="personal_num" type="text" class="form-control" placeholder="Введите номер..." aria-label="Личный номер">
+                                <div class="input-group-append">
+                                    <span class="btn btn-outline-success" type="button" onclick="add_fields('personal_num')">+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="service_mobile_num">
+                        <div class="col-lg ">
+                            <label class="p-2"  for="service_mobile_num">Служебный мобильный номер:</label>
+                        </div>
+                        <div id="div_service_mobile_num" class="input-group col-lg mb-3">
+                            <input id="input_service_mobile_num" name="service_mobile_num" type="tel" class="form-control" placeholder="Введите номер..." aria-label="Мобильный номер">
+                            <div class="input-group-append">
+                                <span class="btn btn-outline-success" type="button" onclick="add_fields('service_mobile_num')">+</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3 col-lg">
+                        <div class="col-lg">
+                            <label class="p-2"  for="service_mobile_num">Загрузить фото:</label>
+                        </div>
+                        <div class="input-group ">
+                            <input name="photo" type="file" class="form-control" accept=".png,.jpg,.svg,.gif"   id="inputGroupFile01" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04"  aria-label="Upload" />
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-mdb-dismiss="modal">Закрыть</button>
+                <button id="updatesubmitbutton" type="submit" form="updateForm" class="btn btn-outline-warning">Обновить</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete record modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Подтверждение</h5>
+                <button type="button" class="badge badge-pill bg-dark" data-mdb-dismiss="modal" aria-label="Close">X</button>
+            </div>
+            <div class="modal-body justify-content-center text-center">
+                <div class="mt-2 mb-2">Вы действительно желаете удалить запись?</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-mdb-dismiss="modal">Нет</button>
+                <button id="deleteModalOkButton" type="button" class="btn btn-danger" onclick="" >Да, конечно!</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    expose:
+      - "27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    container_name: mongodb-container
+
+  mongo_seed:
+    image: mongo
+    links:
+      - mongodb
+    volumes:
+      - ./mongo_seed:/mongo_seed
+    command:
+      /mongo_seed/import.sh
+
+
+  testTask:
+    image: streamdp/beego
+    ports:
+      - 8080:8080
+    container_name: phonebook-container

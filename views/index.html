@@ -1,0 +1,118 @@
+    <div class="card">
+        <div class="card-header"><a href="/" class="mt-2 nav-link text-light"><h4>Телефонный справочник</h4></a></div>
+        <div class="card-body">
+            <form id="query_form" class="form-row" method="post" action="/">
+                <div class="container mt-2">
+                    <div class="row">
+                        <div class="input-group mb-3 col-lg">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="inputGroupSelect01">Подразделение</label>
+                            </div>
+                            <select name="first_level" class="custom-select" id="inputGroupSelect01">
+                                {{if .pq.first_level }}
+                                {{$first_level := .pq.first_level}}
+                                <option value="" disabled>Выберите...</option>
+                                {{range $key, $val := .FirstLevel}}
+                                {{if eq $val $first_level}}
+                                <option value="{{$val}}" selected>{{$val}}</option>
+                                {{else}}
+                                <option value="{{$val}}">{{$val}}</option>
+                                {{end}}
+                                {{end}}
+                                {{else}}
+                                <option value="" disabled  selected>Выберите...</option>
+                                {{range $key, $val := .FirstLevel}}
+                                <option value="{{$val}}">{{$val}}</option>
+                                {{end}}
+                                {{end}}
+                            </select>
+                        </div>
+                        <div class="input-group mb-3 col-lg">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="inputGroupSelect02">Отдел</label>
+                            </div>
+                            <select name="second_level" class="custom-select" id="inputGroupSelect02">
+                                {{if .pq.second_level }}
+                                {{$second_level := .pq.second_level}}
+                                <option value="" disabled>Выберите...</option>
+                                {{range $key, $val := .SecondLevel}}
+                                {{if eq $val $second_level}}
+                                <option value="{{$val}}" selected>{{$val}}</option>
+                                {{else}}
+                                <option value="{{$val}}">{{$val}}</option>
+                                {{end}}
+                                {{end}}
+                                {{else}}
+                                <option value="" disabled  selected>Выберите...</option>
+                                {{range $key, $val := .SecondLevel}}
+                                <option value="{{$val}}">{{$val}}</option>
+                                {{end}}
+                                {{end}}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="third_select" class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="inputGroupSelect03">Сектор</label>
+                        </div>
+                        <select name="third_level" class="custom-select" id="inputGroupSelect03">
+                            {{if .pq.third_level }}
+                            {{$third_level := .pq.third_level}}
+                            <option value="" disabled>Выберите...</option>
+                            {{range $key, $val := .ThirdLevel}}
+                            {{if eq $val $third_level}}
+                            <option value="{{$val}}" selected>{{$val}}</option>
+                            {{else}}
+                            <option value="{{$val}}">{{$val}}</option>
+                            {{end}}
+                            {{end}}
+                            {{else}}
+                            <option value="" selected>Выберите...</option>
+                            {{range $key, $val := .ThirdLevel}}
+                            <option value="{{$val}}">{{$val}}</option>
+                            {{end}}
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Ф.И.О</span>
+                            </div>
+                            {{if .pq.last_name}}
+                            <input name="last_name" value="{{.pq.last_name}}" type="text" aria-label="Фамилия" placeholder="Введите фамилию..." class="form-control">
+                            {{else}}
+                            <input name="last_name" type="text" aria-label="Фамилия" placeholder="Введите фамилию..." class="form-control">
+                            {{end}}
+                            {{if .pq.first_name}}
+                            <input name="first_name" value="{{.pq.first_name}}" type="text" aria-label="Имя" placeholder="Введите имя..." class="form-control">
+                            {{else}}
+                            <input name="first_name" type="text" aria-label="Имя" placeholder="Введите имя..." class="form-control">
+                            {{end}}
+                            {{if .pq.middle_name}}
+                            <input name="middle_name" value="{{.pq.middle_name}}" type="text" aria-label="Отчество" placeholder="Введите отчество..." class="form-control">
+                            {{else}}
+                            <input name="middle_name" type="text" aria-label="Отчество" placeholder="Введите отчество..." class="form-control">
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="container mb-3">
+                <div class="row  pt-1">
+                    <div class="col-auto me-auto">
+                        <a id="createnewrecord" class="mt-2 me-3 btn btn-outline-light" data-mdb-toggle="modal" data-mdb-target="#updateModal" data-mdb-whatever="create">Добавить</a>
+                        <button type="button" id="groupdelete" class="mt-2 me-3 btn btn-outline-light" onclick="show_hide_checkboxes();">Групповое удаление</button>
+                        <button type="submit" form="remove_many_items" id="groupdeletedoaction" class="mt-2 btn btn-outline-danger" style="display: none;">Удалить</button>
+                    </div>
+<!--                    onclick="delete_many_records();"-->
+                    <div class=" mt-2 col-auto">
+                        <a class="btn btn-outline-light" onclick="location.href='/reset';">Сбросить</a>
+                    </div>
+                    <div class="mt-2 col-auto form-actions">
+                        <button id="filterrecords" form="query_form" type="submit" class="btn  btn-outline-light">Найти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

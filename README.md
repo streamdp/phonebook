@@ -3,7 +3,7 @@
 В проекте используется  MongoDB база данных и Bootstrap Material Design UI KIT для создания интерфейса. 
 
 Чтобы собрать докер контейнер, введите:
-`docker build -t streamdp / beego .`
+`docker build -t phonebook .`
 
 Чтобы запустить:
 `docker-compose up -d`
@@ -15,7 +15,7 @@ Test task for software engineer position. Written in Go with the BeeGo MVC Frame
 The project uses MongoDB and Bootstrap Material Design UI KIT. 
 
 To create a docker container, enter:
-`docker build -t streamdp / beego .`
+`docker build -t phonebook .`
 
 For start:
 `docker-compose up -d`

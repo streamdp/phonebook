@@ -1,4 +1,5 @@
 {{if .PhoneRecords }}
+    {{if .paginator}}
     {{if gt .paginator.PageNums 1}}
     <nav aria-label="Page navigation" class="mt-4 mb-4">
         <ul class="pagination justify-content-center">
@@ -28,7 +29,9 @@
         </ul>
     </nav>
     {{end}}
+    {{end}}
     <form class="form-row" id="remove_many_items" action="/v1/delete_many" method="post">
+        <input class="form-control" type="hidden" name="page_num_many_delete" value="{{ .CurrentPage }}">
         <div class="card-deck mb-4 justify-content-center">
         {{range $key, $val := .PhoneRecords}}
             <div class="col-lg-4 mb-2">
@@ -120,6 +123,7 @@
         {{end}}
             </div>
     </form>
+    {{if .paginator}}
     {{if gt .paginator.PageNums 1}}
     <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center">
@@ -148,5 +152,6 @@
             {{end}}
         </ul>
     </nav>
+    {{end}}
     {{end}}
 {{end}}

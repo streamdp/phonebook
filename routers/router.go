@@ -8,6 +8,7 @@ import (
 func init() {
 	beego.Router("/", &controllers.MainController{})
 	beego.Router("/reset", &controllers.MainController{}, "get:Reset")
+	beego.Router("/showOne", &controllers.MainController{}, "get:ShowOne")
 	beego.Router("/updateRecord", &controllers.RecordController{})
 	beego.Router("/v1/third", &controllers.OptionsController{})
 	beego.Router("/v1/get_record", &controllers.RecordController{}, "get:GetRecord")

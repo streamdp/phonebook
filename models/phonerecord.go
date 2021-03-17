@@ -12,57 +12,59 @@ import (
 )
 
 type BaseOptions struct {
-	FirstLevel			[]string			`json:"first_level" bson:"first_level"`
-	SecondLevel			map[string][]string	`json:"second_level" bson:"second_level"`
+	FirstLevel  []string            `json:"first_level" bson:"first_level"`
+	SecondLevel map[string][]string `json:"second_level" bson:"second_level"`
 }
 
 type Department struct {
-	FirstLevel			string				`json:"first_level" bson:"first_level"`
-	SecondLevel			string				`json:"second_level" bson:"second_level"`
-	ThirdLevel			string				`json:"third_level" bson:"third_level"`
+	FirstLevel  string `json:"first_level" bson:"first_level"`
+	SecondLevel string `json:"second_level" bson:"second_level"`
+	ThirdLevel  string `json:"third_level" bson:"third_level"`
 }
 
 type QueryForm struct {
-	FirstLevel			string				`form:"first_level"`
-	SecondLevel			string				`form:"second_level"`
-	ThirdLevel			string				`form:"third_level"`
-	FirstName   		string			    `form:"first_name"`
-	LastName			string			    `form:"last_name"`
-	MiddleName			string			    `form:"middle_name"`
+	FirstLevel  string `form:"first_level"`
+	SecondLevel string `form:"second_level"`
+	ThirdLevel  string `form:"third_level"`
+	FirstName   string `form:"first_name"`
+	LastName    string `form:"last_name"`
+	MiddleName  string `form:"middle_name"`
 }
 
 type UpdateForm struct {
-	ID					string				`form:"modal_id_user"`
-	FirstLevel			string				`form:"modal_first_level"`
-	SecondLevel			string				`form:"modal_second_level"`
-	ThirdLevel			string				`form:"modal_third_level"`
-	FirstName   		string			    `form:"modal_first_name"`
-	LastName			string			    `form:"modal_last_name"`
-	MiddleName			string			    `form:"modal_middle_name"`
-	Position			string				`form:"modal_position"`
-	ServiceNumber		[]string			`form:"service_num"`
-	PersonalNumber		[]string			`form:"personal_num"`
-	ServiceMobileNumber	[]string			`form:"service_mobile_num"`
+	ID                  string   `form:"modal_id_user"`
+	FirstLevel          string   `form:"modal_first_level"`
+	SecondLevel         string   `form:"modal_second_level"`
+	ThirdLevel          string   `form:"modal_third_level"`
+	FirstName           string   `form:"modal_first_name"`
+	LastName            string   `form:"modal_last_name"`
+	MiddleName          string   `form:"modal_middle_name"`
+	Position            string   `form:"modal_position"`
+	ServiceNumber       []string `form:"service_num"`
+	PersonalNumber      []string `form:"personal_num"`
+	ServiceMobileNumber []string `form:"service_mobile_num"`
+	PageNum             int      `form:"page_num"`
 }
 
 type RecordIds struct {
-	ID					[]string 			`json:"id" form:"should_be_removed"`
+	ID      []string `json:"id" form:"should_be_removed"`
+	PageNum int      `form:"page_num_many_delete"`
 }
 
 type PhoneBookRecord struct {
-	ID         	 		primitive.ObjectID	`json:"id" bson:"_id,omitempty"`
-	FirstName   		string			    `json:"first_name" bson:"first_name"`
-	LastName			string			    `json:"last_name" bson:"last_name"`
-	MiddleName			string			    `json:"middle_name" bson:"middle_name"`
-	Department			Department			`json:"department" bson:"department"`
-	Position 			string			    `json:"position" bson:"position"`
-	ServiceNumber		[]string		    `json:"service_number" bson:"service_number"`
-	PersonalNumber  	[]string			`json:"personal_number" bson:"personal_number"`
-	ServiceMobileNumber	[]string			`json:"service_mobile_number" bson:"service_mobile_number"`
-	CreatedAt   		time.Time     	    `json:"created_at" bson:"created_at"`
-	UpdatedAt   		time.Time       	`json:"updated_at" bson:"updated_at"`
-	IsUpdated			bool				`json:"is_updated" bson:"is_updated"`
-	PhotoUrl			string				`json:"photo_url" bson:"photo_url"`
+	ID                  primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	FirstName           string             `json:"first_name" bson:"first_name"`
+	LastName            string             `json:"last_name" bson:"last_name"`
+	MiddleName          string             `json:"middle_name" bson:"middle_name"`
+	Department          Department         `json:"department" bson:"department"`
+	Position            string             `json:"position" bson:"position"`
+	ServiceNumber       []string           `json:"service_number" bson:"service_number"`
+	PersonalNumber      []string           `json:"personal_number" bson:"personal_number"`
+	ServiceMobileNumber []string           `json:"service_mobile_number" bson:"service_mobile_number"`
+	CreatedAt           time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt           time.Time          `json:"updated_at" bson:"updated_at"`
+	IsUpdated           bool               `json:"is_updated" bson:"is_updated"`
+	PhotoUrl            string             `json:"photo_url" bson:"photo_url"`
 }
 
 func CreateOne(record *PhoneBookRecord) error {
@@ -94,7 +96,7 @@ func UpdateOne(id string, record *PhoneBookRecord) error {
 	update := bson.M{
 		"$set": &record,
 	}
-	_, err = collection.UpdateOne(context.TODO(), bson.D{{"_id", objectId}} , &update, opts)
+	_, err = collection.UpdateOne(context.TODO(), bson.D{{"_id", objectId}}, &update, opts)
 	if err != nil {
 		return err
 	}

@@ -8,8 +8,9 @@
             </div>
             <div class="modal-body">
                 <form id="updateForm" action="/updateRecord"  enctype="multipart/form-data"  method="post">
+                    <input class="form-control" type="hidden" name="page_num" value="{{ .CurrentPage }}">
+                    <input class="form-control" type="hidden" name="modal_id_user">
                     <div class="input-group mb-3 col-lg">
-                        <input class="form-control" type="hidden" name="modal_id_user">
                         <div class="input-group-prepend w-25">
                             <label class="input-group-text w-100" for="modalInputGroupSelect01">Подразделение</label>
                         </div>

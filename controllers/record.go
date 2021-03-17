@@ -2,44 +2,42 @@ package controllers
 
 import (
 	"context"
+	"github.com/disintegration/imaging"
 	"github.com/mxmCherry/translit/uknational"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/text/transform"
 	"log"
 	"os"
+	"phonebook/models"
 	"regexp"
 	"strconv"
 	"strings"
-	"phonebook/models"
 	"time"
-	"github.com/disintegration/imaging"
 )
 
 type RecordController struct {
 	ExtendedController
 }
 
-func (c *RecordController) GoBack(recoverQuery bool, id string) {
+func (c *RecordController) GoBack(recoverQuery bool, page int, id string) {
 	if recoverQuery {
-		queryResult, _ = models.GetManyByFilter(c.GetFilterStringFromCookie())
-		c.Redirect("/?p=" + strconv.Itoa(page),302)
+		c.Redirect("/?p="+strconv.Itoa(page), 302)
 	} else {
-		objectId, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			log.Println(err)
-		}
-		queryResult, err = models.GetManyByFilter(bson.D{{"_id", objectId}})
-		if err != nil {
-			log.Println(err)
-		}
-		c.Redirect("/" ,302)
+		c.Redirect("/showOne?id="+id, 302)
 	}
 }
 
 func (c *RecordController) DeleteRecord() {
-	var val string
+	var (
+		val  string
+		page int
+	)
 	err := c.Ctx.Input.Bind(&val, "id")
+	if err != nil {
+		log.Println(err)
+	}
+	err = c.Ctx.Input.Bind(&page, "p")
 	if err != nil {
 		log.Println(err)
 	}
@@ -47,10 +45,10 @@ func (c *RecordController) DeleteRecord() {
 	if err != nil {
 		log.Println(err)
 	}
-	c.GoBack(true,"")
+	c.GoBack(true, page, "")
 }
 
-func (c *RecordController)DeleteManyRecords() {
+func (c *RecordController) DeleteManyRecords() {
 	var err error
 	recordIds := models.RecordIds{}
 	if err = c.ParseForm(&recordIds); err != nil {
@@ -62,7 +60,7 @@ func (c *RecordController)DeleteManyRecords() {
 			log.Println(err)
 		}
 	}
-	c.GoBack(true,"")
+	c.GoBack(true, recordIds.PageNum, "")
 }
 
 func (c *RecordController) GetRecord() {
@@ -82,48 +80,46 @@ func (c *RecordController) SetToken(key string, value string) {
 	c.SetSecureCookie(c.Session.SessionID(context.TODO()), key, value)
 }
 
-func (c *RecordController) GetToken(key string) string {
+func (c *RecordController) GetToken(key string) (string, bool) {
 	cookieValue, success := c.GetSecureCookie(c.Session.SessionID(context.TODO()), key)
 	if !success {
 		log.Println("Can't get value from cookie...")
 	}
-	return cookieValue
+	return cookieValue, success
 }
 
-func (c *RecordController) GetFilterStringFromCookie()  bson.D {
+func (c *RecordController) GetFilterStringFromCookie() bson.D {
 	filterString := bson.D{}
-	prevQuery["first_level"] = c.GetToken("department.first_level")
-	if prevQuery["first_level"] != "" {
-		filterString = append(filterString, primitive.E{Key: "department.first_level", Value: prevQuery["first_level"]})
-	}
-	prevQuery["second_level"] = c.GetToken("department.second_level")
-	if  prevQuery["second_level"] != "" {
-		filterString = append(filterString, primitive.E{Key: "department.second_level", Value: prevQuery["second_level"]})
-	}
-	prevQuery["third_level"] = c.GetToken("department.third_level")
-	if prevQuery["third_level"] != "" {
-		filterString = append(filterString, primitive.E{Key: "department.third_level", Value: prevQuery["third_level"]})
-	}
-	prevQuery["first_name"] = c.GetToken("first_name")
-	if prevQuery["first_name"] != "" {
-		filterString = append(filterString, primitive.E{Key: "first_name", Value: prevQuery["first_name"]})
-	}
-	prevQuery["last_name"] = c.GetToken("last_name")
-	if prevQuery["last_name"] != "" {
-		filterString = append(filterString, primitive.E{Key: "last_name", Value: prevQuery["last_name"]})
-	}
-	prevQuery["middle_name"] = c.GetToken("middle_name")
-	if prevQuery["middle_name"] != "" {
-		filterString = append(filterString, primitive.E{Key: "middle_name", Value: prevQuery["middle_name"]})
+	pqtkn, success := c.GetToken("prevQuery")
+	if success && len(pqtkn) > 0 {
+		pqstr := strings.Split(pqtkn, ";")
+		if strings.TrimSpace(pqstr[0]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.first_level", Value: strings.TrimSpace(pqstr[0])})
+		}
+		if strings.TrimSpace(pqstr[1]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.second_level", Value: strings.TrimSpace(pqstr[1])})
+		}
+		if strings.TrimSpace(pqstr[2]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.third_level", Value: strings.TrimSpace(pqstr[2])})
+		}
+		if strings.TrimSpace(pqstr[3]) != "" {
+			filterString = append(filterString, primitive.E{Key: "first_name", Value: strings.TrimSpace(pqstr[3])})
+		}
+		if strings.TrimSpace(pqstr[4]) != "" {
+			filterString = append(filterString, primitive.E{Key: "last_name", Value: strings.TrimSpace(pqstr[4])})
+		}
+		if strings.TrimSpace(pqstr[5]) != "" {
+			filterString = append(filterString, primitive.E{Key: "middle_name", Value: strings.TrimSpace(pqstr[5])})
+		}
 	}
 	return filterString
 }
 
 func (c *RecordController) Post() {
 	var (
-		ur models.PhoneBookRecord
+		ur  models.PhoneBookRecord
 		err error
-		)
+	)
 	uf := models.UpdateForm{}
 	if err = c.ParseForm(&uf); err != nil {
 		log.Println(err)
@@ -163,7 +159,6 @@ func (c *RecordController) Post() {
 	if file != nil {
 		defer file.Close()
 		recordId := ""
-
 		if uf.ID != "" {
 			recordId = uf.ID
 		} else {
@@ -178,7 +173,7 @@ func (c *RecordController) Post() {
 		re := regexp.MustCompile("[[:^ascii:]]")
 		photoFilePath = re.ReplaceAllLiteralString(photoFilePath, "")
 		filenameSplited := strings.Split(head.Filename, ".")
-		filename:=recordId+"."+filenameSplited[len(filenameSplited) - 1]
+		filename := recordId + "." + filenameSplited[len(filenameSplited)-1]
 		err = os.MkdirAll(photoFilePath, os.ModePerm)
 		if err != nil {
 			log.Println(err)
@@ -187,7 +182,7 @@ func (c *RecordController) Post() {
 		if err != nil {
 			log.Println(err)
 		}
-		src, err := imaging.Open(photoFilePath+filename)
+		src, err := imaging.Open(photoFilePath + filename)
 		if err != nil {
 			log.Fatalf("failed to open image: %v", err)
 		}
@@ -197,7 +192,7 @@ func (c *RecordController) Post() {
 		if err != nil {
 			log.Fatalf("failed to save image: %v", err)
 		}
-		ur.PhotoUrl = photoFilePath+filename
+		ur.PhotoUrl = photoFilePath + filename
 	} else {
 		ur.PhotoUrl = "static/img/incognito.jpg"
 	}
@@ -206,12 +201,12 @@ func (c *RecordController) Post() {
 		if err != nil {
 			log.Println(err)
 		}
-		c.GoBack(true, "")
+		c.GoBack(true, uf.PageNum, "")
 	} else {
 		err = models.CreateOne(&ur)
 		if err != nil {
 			log.Println(err)
 		}
-		c.GoBack(false, ur.ID.Hex())
+		c.GoBack(false, uf.PageNum, ur.ID.Hex())
 	}
 }

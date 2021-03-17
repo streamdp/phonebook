@@ -8,17 +8,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
-	"reflect"
 	"phonebook/models"
+	"reflect"
+	"strings"
 )
 
 var (
-	queryResult []models.PhoneBookRecord
-	prevQuery   = make(map[string]string)
-	recPerPage  = 18
-	page        = 0
-	bo          models.BaseOptions
-	keys        []string
+	recPerPage = 18
+	bo         models.BaseOptions
+	keys       []string
 )
 
 type ExtendedController struct {
@@ -32,12 +30,9 @@ func IsEmpty(bo models.BaseOptions) bool {
 
 func (c *ExtendedController) Prepare() {
 	c.Session = c.StartSession()
-	if IsEmpty(bo) { getBaseOptions() }
-	c.Data["RequestUrl"] = c.Ctx.Input.URL()
-	c.Data["pq"] = prevQuery
-	c.Data["FirstLevel"] = bo.FirstLevel
-	c.Data["SecondLevel"] = keys
-	c.Data["ThirdLevel"] = bo.SecondLevel[prevQuery["second_level"]]
+	if IsEmpty(bo) {
+		getBaseOptions()
+	}
 }
 
 type MainController struct {
@@ -56,25 +51,74 @@ func getBaseOptions() {
 	}
 }
 
-func (c *MainController) ListPostsByOffsetAndLimit(offset int, postperpage int) []models.PhoneBookRecord{
-	if offset +recPerPage < len(queryResult) {
-		return queryResult[offset:offset+recPerPage]
-	}	else if offset < len(queryResult){
-		return queryResult[offset:len(queryResult)]
-	}	else {
-		return queryResult
+func (c *MainController) ListPostsByOffsetAndLimit(querySet []models.PhoneBookRecord, offset int, postperpage int) []models.PhoneBookRecord {
+	if offset+postperpage < len(querySet) {
+		return querySet[offset : offset+recPerPage]
+	} else if offset < len(querySet) {
+		return querySet[offset:len(querySet)]
+	} else {
+		return querySet
 	}
 }
 
 func (c *MainController) Get() {
+	var page int
 	err := c.Ctx.Input.Bind(&page, "p")
 	if err != nil {
 		log.Println(err)
 	}
-	if len(queryResult)>0 {
-		paginator := pagination2.SetPaginator(c.Ctx, recPerPage, int64(len(queryResult)))
-		c.Data["PhoneRecords"] = c.ListPostsByOffsetAndLimit(paginator.Offset(), recPerPage)
+	var queryResultGet []models.PhoneBookRecord
+	pqtkn, success := c.GetToken("prevQuery")
+	if success && len(pqtkn) > 5 {
+		queryResultGet, _ = models.GetManyByFilter(c.GetFilterStringFromCookie())
 	}
+	if len(queryResultGet) > 0 {
+		paginator := pagination2.SetPaginator(c.Ctx, recPerPage, int64(len(queryResultGet)))
+		c.Data["PhoneRecords"] = c.ListPostsByOffsetAndLimit(queryResultGet, paginator.Offset(), recPerPage)
+	}
+	c.BindTemplateData()
+	c.Data["CurrentPage"] = page
+	c.TplName = "base.html"
+}
+
+func (c *MainController) BindTemplateData() {
+	pqtkn, success := c.GetToken("prevQuery")
+	prevQuery := make(map[string]string)
+	if success {
+		pqstr := strings.Split(pqtkn, ";")
+		prevQuery["first_level"] = strings.TrimSpace(pqstr[0])
+		prevQuery["second_level"] = strings.TrimSpace(pqstr[1])
+		prevQuery["third_level"] = strings.TrimSpace(pqstr[2])
+		prevQuery["first_name"] = strings.TrimSpace(pqstr[3])
+		prevQuery["last_name"] = strings.TrimSpace(pqstr[4])
+		prevQuery["middle_name"] = strings.TrimSpace(pqstr[5])
+	}
+	c.Data["RequestUrl"] = c.Ctx.Input.URL()
+	c.Data["pq"] = prevQuery
+	c.Data["FirstLevel"] = bo.FirstLevel
+	c.Data["SecondLevel"] = keys
+	c.Data["ThirdLevel"] = bo.SecondLevel[prevQuery["second_level"]]
+}
+
+func (c *MainController) ShowOne() {
+	var id string
+	err := c.Ctx.Input.Bind(&id, "id")
+	if err != nil {
+		log.Println(err)
+	}
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println(err)
+	}
+	queryResultGet, err := models.GetManyByFilter(bson.D{{"_id", objectId}})
+	if err != nil {
+		log.Println(err)
+	}
+	if len(queryResultGet) > 0 {
+		paginator := pagination2.SetPaginator(c.Ctx, recPerPage, int64(len(queryResultGet)))
+		c.Data["PhoneRecords"] = c.ListPostsByOffsetAndLimit(queryResultGet, paginator.Offset(), recPerPage)
+	}
+	c.BindTemplateData()
 	c.TplName = "base.html"
 }
 
@@ -82,24 +126,16 @@ func (c *MainController) SetToken(key string, value string) {
 	c.SetSecureCookie(c.Session.SessionID(context.TODO()), key, value)
 }
 
-func (c *MainController) GetToken(key string) string {
+func (c *MainController) GetToken(key string) (string, bool) {
 	cookieValue, success := c.GetSecureCookie(c.Session.SessionID(context.TODO()), key)
 	if !success {
 		log.Println("Can't get value from cookie...")
 	}
-	return cookieValue
+	return cookieValue, success
 }
 
 func (c *MainController) Reset() {
-	queryResult = []models.PhoneBookRecord{}
-	prevQuery =	make(map[string]string)
-	page = 0
-	c.SetToken("department.first_level", "")
-	c.SetToken("department.second_level", "")
-	c.SetToken("department.third_level", "")
-	c.SetToken("first_name", "")
-	c.SetToken("last_name", "")
-	c.SetToken("middle_name", "")
+	c.SetToken("prevQuery", ";;;;;")
 	c.Redirect("/", 303)
 }
 
@@ -108,37 +144,34 @@ func (c *MainController) Post() {
 	if err := c.ParseForm(&qf); err != nil {
 		log.Println(err)
 	}
-	prevQuery["first_level"] = qf.FirstLevel
-	prevQuery["second_level"] = qf.SecondLevel
-	prevQuery["third_level"] = qf.ThirdLevel
-	prevQuery["first_name"] = qf.FirstName
-	prevQuery["last_name"] = qf.LastName
-	prevQuery["middle_name"] = qf.MiddleName
-	c.SetToken("department.first_level", qf.FirstLevel)
-	c.SetToken("department.second_level", qf.SecondLevel)
-	c.SetToken("department.third_level", qf.ThirdLevel)
-	c.SetToken("first_name", qf.FirstName)
-	c.SetToken("last_name", qf.LastName)
-	c.SetToken("middle_name", qf.MiddleName)
-	filterString := bson.D{}
-	if qf.FirstLevel != "" {
-		filterString = append(filterString, primitive.E{Key: "department.first_level", Value: qf.FirstLevel})
-	}
-	if qf.SecondLevel != "" {
-		filterString = append(filterString, primitive.E{Key: "department.second_level", Value: qf.SecondLevel})
-	}
-	if qf.ThirdLevel != "" {
-		filterString = append(filterString, primitive.E{Key: "department.third_level", Value: qf.ThirdLevel})
-	}
-	if qf.FirstName != "" {
-		filterString = append(filterString, primitive.E{Key: "first_name", Value: qf.FirstName})
-	}
-	if qf.LastName != "" {
-		filterString = append(filterString, primitive.E{Key: "last_name", Value: qf.LastName})
-	}
-	if qf.MiddleName != "" {
-		filterString = append(filterString, primitive.E{Key: "middle_name", Value: qf.MiddleName})
-	}
-	queryResult, _ = models.GetManyByFilter(filterString)
+	pqstring := qf.FirstLevel + ";" + qf.SecondLevel + ";" + qf.ThirdLevel + ";" + qf.FirstName + ";" + qf.LastName + ";" + qf.MiddleName
+	c.SetToken("prevQuery", pqstring)
 	c.Redirect("/", 303)
+}
+
+func (c *MainController) GetFilterStringFromCookie() bson.D {
+	filterString := bson.D{}
+	pqtkn, success := c.GetToken("prevQuery")
+	if success && len(pqtkn) > 0 {
+		pqstr := strings.Split(pqtkn, ";")
+		if strings.TrimSpace(pqstr[0]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.first_level", Value: strings.TrimSpace(pqstr[0])})
+		}
+		if strings.TrimSpace(pqstr[1]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.second_level", Value: strings.TrimSpace(pqstr[1])})
+		}
+		if strings.TrimSpace(pqstr[2]) != "" {
+			filterString = append(filterString, primitive.E{Key: "department.third_level", Value: strings.TrimSpace(pqstr[2])})
+		}
+		if strings.TrimSpace(pqstr[3]) != "" {
+			filterString = append(filterString, primitive.E{Key: "first_name", Value: strings.TrimSpace(pqstr[3])})
+		}
+		if strings.TrimSpace(pqstr[4]) != "" {
+			filterString = append(filterString, primitive.E{Key: "last_name", Value: strings.TrimSpace(pqstr[4])})
+		}
+		if strings.TrimSpace(pqstr[5]) != "" {
+			filterString = append(filterString, primitive.E{Key: "middle_name", Value: strings.TrimSpace(pqstr[5])})
+		}
+	}
+	return filterString
 }

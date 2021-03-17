@@ -5,9 +5,11 @@ let phone_mask = "8 (999) 9-99-99";
 let mobile_phone_mask = "+375 (99) 999-99-99";
 
 $('#deleteModal').on('show.bs.modal', function (event) {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
     const button = event.relatedTarget;
     const record_id = button.getAttribute('data-mdb-recordid');
-    $('#deleteModalOkButton').attr("onclick", "location.href='/deleteRecord?id="+record_id+"';");
+    $('#deleteModalOkButton').attr("onclick", "location.href='/deleteRecord?id="+record_id+"&p="+urlParams.get('p')+"';");
 });
 
 $(function(){

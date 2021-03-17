@@ -20,4 +20,4 @@ To create a docker container, enter:
 For start:
 `docker-compose up -d`
 
-The application will be available at 127.0.0.1:8080
+The application will be available at 127.0.0.1:80

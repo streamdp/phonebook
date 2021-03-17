@@ -18,8 +18,8 @@ var clientInstanceError error
 var mongoOnce sync.Once
 //I have used below constants just to hold required database config's.
 const (
-	//CONNECTIONSTRING = "mongodb://localhost:27017"
-	CONNECTIONSTRING = "mongodb://admin:admin@mongodb-container:27017"
+	CONNECTIONSTRING = "mongodb://localhost:27017"
+	//CONNECTIONSTRING = "mongodb://admin:admin@mongodb-container:27017"
 	DB               = "test"
 	ISSUES           = "phoneBook"
 )

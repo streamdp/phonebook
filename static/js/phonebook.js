@@ -158,7 +158,7 @@ update_modal_div.on('show.bs.modal', function (event) {
         $("#modalInputGroupSelect02").change();
         window.setTimeout(function(){
             $('#modalInputGroupSelect03').val(response['department']['third_level']);
-        }, 400);
+        }, 600);
         $(".form-control[name='modal_id_user']").val(response['id']);
         $(".form-control[name='modal_first_name']").val(response['first_name']);
         $(".form-control[name='modal_last_name']").val(response['last_name']);

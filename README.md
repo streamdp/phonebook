@@ -8,7 +8,7 @@
 Чтобы запустить:
 `docker-compose up -d`
 
-Приложение будет доступно на 127.0.0.1:8080
+Приложение будет доступно на 127.0.0.1:80
 
 
 Test task for software engineer position. Written in Go with the BeeGo MVC Framework.
@@ -20,4 +20,4 @@ To create a docker container, enter:
 For start:
 `docker-compose up -d`
 
-The application will be available at 127.0.0.1:8080
+The application will be available at 127.0.0.1:80

@@ -21,3 +21,5 @@ For start:
 `docker-compose up -d`
 
 The application will be available at 127.0.0.1:80
+
+Working example URL: https://phonebook.gq/
